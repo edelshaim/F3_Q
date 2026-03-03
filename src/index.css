@@ -1,0 +1,62 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-display: "Space Grotesk", sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-[#0f1115] text-slate-100 font-sans antialiased;
+  }
+}
+
+.glass-panel {
+  @apply bg-slate-900/50 backdrop-blur-md border border-slate-800 rounded-2xl;
+}
+
+.timer-glow {
+  text-shadow: 0 0 20px rgba(52, 211, 153, 0.3);
+}
+
+.exercise-active {
+  @apply border-emerald-500/50 bg-emerald-500/10;
+}
+
+/* Custom scrollbar for a cleaner look */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-800 rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-700;
+}
+
+/* Print Friendly Weinke */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .glass-panel {
+    background: white !important;
+    border: 1px solid black !important;
+    box-shadow: none !important;
+    color: black !important;
+  }
+  button, 
+  .timer-glow, 
+  header .text-right {
+    display: none !important;
+  }
+  * {
+    color: black !important;
+  }
+}
