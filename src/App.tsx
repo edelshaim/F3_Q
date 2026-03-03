@@ -19,7 +19,6 @@ import {
 import { Exercise, WorkoutPlan } from './types';
 import { WorkoutTimer } from './components/WorkoutTimer';
 import { ExerciseItem } from './components/ExerciseItem';
-import { generateWorkoutPlan, parseNaturalLanguageWorkout } from './services/geminiService';
 import exercisesData from './data/exercises.json';
 
 const INITIAL_PLAN: WorkoutPlan = {
@@ -136,42 +135,11 @@ export default function App() {
   };
 
   const handleGenerate = async () => {
-    if (!themeInput.trim()) return;
-    setIsGenerating(true);
-    try {
-      const exercises = await generateWorkoutPlan(themeInput);
-      if (exercises.length > 0) {
-        setPlan({
-          title: `${themeInput} Session`,
-          location: "The AO",
-          exercises: exercises.map((ex) => ({ ...ex, id: Math.random().toString(36).substr(2, 9), completed: false }))
-        });
-      }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsGenerating(false);
-    }
+    // Disabled for Day 1
   };
 
   const handleImport = async () => {
-    if (!importText.trim()) return;
-    setIsParsing(true);
-    try {
-      const exercises = await parseNaturalLanguageWorkout(importText);
-      if (exercises.length > 0) {
-        setPlan(prev => ({
-          ...prev,
-          exercises: exercises.map((ex) => ({ ...ex, id: Math.random().toString(36).substr(2, 9), completed: false }))
-        }));
-        setShowImportModal(false);
-        setImportText('');
-      }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsParsing(false);
-    }
+    // Disabled for Day 1
   };
 
   const activeExercise = plan.exercises.find(ex => ex.id === activeExerciseId);
