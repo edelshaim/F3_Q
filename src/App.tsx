@@ -19,6 +19,7 @@ import {
 import { Exercise, WorkoutPlan } from './types';
 import { WorkoutTimer } from './components/WorkoutTimer';
 import { ExerciseItem } from './components/ExerciseItem';
+import { Clock } from "./components/Clock";
 
 const INITIAL_PLAN: WorkoutPlan = {
   title: "THE SNOW SHOVEL GAUNTLET",
@@ -105,7 +106,7 @@ export default function App() {
     try {
       const { default: exercisesData } = await import('./data/exercises.json');
 
-      const getRandom = (arr: any[], n: number) => {
+      const getRandom = <T,>(arr: T[], n: number) => {
         const shuffled = [...arr].sort(() => 0.5 - Math.random());
         return shuffled.slice(0, n);
       };
