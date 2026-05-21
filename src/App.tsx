@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { Exercise, WorkoutPlan } from './types';
 import { WorkoutTimer } from './components/WorkoutTimer';
+import { Clock } from './components/Clock';
 import { ExerciseItem } from './components/ExerciseItem';
 
 const INITIAL_PLAN: WorkoutPlan = {
@@ -324,9 +325,16 @@ export default function App() {
               </button>
               <button
                 onClick={() => {
-                  const name = prompt("Exercise Name?");
+                  let name = prompt("Exercise Name?");
                   if (name) {
-                    const reps = prompt("Reps/Duration?");
+                    name = name.replace(/<[^>]*>?/gm, '').trim().substring(0, 100);
+                    if (!name) return;
+
+                    let reps = prompt("Reps/Duration?");
+                    if (reps) {
+                        reps = reps.replace(/<[^>]*>?/gm, '').trim().substring(0, 50);
+                    }
+
                     setPlan(prev => ({
                       ...prev,
                       exercises: [...prev.exercises, {
