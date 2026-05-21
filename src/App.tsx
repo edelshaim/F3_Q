@@ -19,6 +19,7 @@ import {
 import { Exercise, WorkoutPlan } from './types';
 import { WorkoutTimer } from './components/WorkoutTimer';
 import { ExerciseItem } from './components/ExerciseItem';
+import { Clock } from './components/Clock';
 
 const INITIAL_PLAN: WorkoutPlan = {
   title: "THE SNOW SHOVEL GAUNTLET",
@@ -137,12 +138,9 @@ export default function App() {
     }
   };
 
-  const handleGenerate = async () => {
-    // Disabled for Day 1
-  };
-
   const handleImport = async () => {
-    // Disabled for Day 1
+    alert('Import feature is not implemented yet.');
+    setShowImportModal(false);
   };
 
   const activeExercise = plan.exercises.find(ex => ex.id === activeExerciseId);
