@@ -19,6 +19,7 @@ import {
 import { Exercise, WorkoutPlan } from './types';
 import { WorkoutTimer } from './components/WorkoutTimer';
 import { ExerciseItem } from './components/ExerciseItem';
+import { Clock } from './components/Clock';
 
 const INITIAL_PLAN: WorkoutPlan = {
   title: "THE SNOW SHOVEL GAUNTLET",
@@ -324,19 +325,23 @@ export default function App() {
               </button>
               <button
                 onClick={() => {
-                  const name = prompt("Exercise Name?");
-                  if (name) {
-                    const reps = prompt("Reps/Duration?");
-                    setPlan(prev => ({
-                      ...prev,
-                      exercises: [...prev.exercises, {
-                        id: Math.random().toString(36).substr(2, 9),
-                        name,
-                        reps: reps || '',
-                        category: 'The Thang',
-                        completed: false
-                      }]
-                    }));
+                  const rawName = prompt("Exercise Name?");
+                  if (rawName) {
+                    const cleanName = rawName.replace(/<[^>]*>?/gm, '').trim().substring(0, 100);
+                    if (cleanName) {
+                      const rawReps = prompt("Reps/Duration?");
+                      const cleanReps = (rawReps || '').replace(/<[^>]*>?/gm, '').trim().substring(0, 50);
+                      setPlan(prev => ({
+                        ...prev,
+                        exercises: [...prev.exercises, {
+                          id: Math.random().toString(36).substr(2, 9),
+                          name: cleanName,
+                          reps: cleanReps,
+                          category: 'The Thang',
+                          completed: false
+                        }]
+                      }));
+                    }
                   }
                 }}
                 className="flex items-center justify-center gap-2 p-3 rounded-xl border border-slate-800 text-slate-400 hover:bg-slate-800/50 transition-all text-sm"
