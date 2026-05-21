@@ -19,7 +19,6 @@ import {
 import { Exercise, WorkoutPlan } from './types';
 import { WorkoutTimer } from './components/WorkoutTimer';
 import { ExerciseItem } from './components/ExerciseItem';
-import exercisesData from './data/exercises.json';
 
 const INITIAL_PLAN: WorkoutPlan = {
   title: "THE SNOW SHOVEL GAUNTLET",
@@ -75,6 +74,7 @@ export default function App() {
   });
   const [isGenerating, setIsGenerating] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
+  const [isRandomizing, setIsRandomizing] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [importText, setImportText] = useState('');
   const [themeInput, setThemeInput] = useState('');
@@ -106,17 +106,21 @@ export default function App() {
     }));
   };
 
-  const handleRandomize = () => {
-    const getRandom = (arr: any[], n: number) => {
-      const shuffled = [...arr].sort(() => 0.5 - Math.random());
-      return shuffled.slice(0, n);
-    };
+  const handleRandomize = async () => {
+    setIsRandomizing(true);
+    try {
+      const { default: exercisesData } = await import('./data/exercises.json');
 
-    if (!exercisesData || exercisesData.length === 0) return;
+      const getRandom = (arr: any[], n: number) => {
+        const shuffled = [...arr].sort(() => 0.5 - Math.random());
+        return shuffled.slice(0, n);
+      };
 
-    const warmups = getRandom(exercisesData, 4).map((e, i) => ({
-      id: `w${Date.now()}${i}`, name: e.name, reps: '15 IC', category: 'Warm-up', completed: false, description: e.description
-    }));
+      if (!exercisesData || exercisesData.length === 0) return;
+
+      const warmups = getRandom(exercisesData, 4).map((e, i) => ({
+        id: `w${Date.now()}${i}`, name: e.name, reps: '15 IC', category: 'Warm-up', completed: false, description: e.description
+      }));
 
     const thang = getRandom(exercisesData, 8).map((e, i) => ({
       id: `t${Date.now()}${i}`, name: e.name, reps: '20 OYO', category: 'The Thang', completed: false, description: e.description
@@ -132,6 +136,11 @@ export default function App() {
       exercises: [...warmups, ...thang, ...mary] as Exercise[]
     });
     setActiveExerciseId(null);
+    } catch (error) {
+      console.error("Failed to load exercises data:", error);
+    } finally {
+      setIsRandomizing(false);
+    }
   };
 
   const handleGenerate = async () => {
@@ -199,10 +208,15 @@ export default function App() {
           <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={handleRandomize}
-              className="glass-panel p-4 flex items-center justify-center gap-3 flex-1 text-slate-200 hover:text-emerald-400 hover:border-emerald-500/30 transition-all font-bold text-lg group bg-slate-900/50"
+              disabled={isRandomizing}
+              className="glass-panel p-4 flex items-center justify-center gap-3 flex-1 text-slate-200 hover:text-emerald-400 hover:border-emerald-500/30 transition-all font-bold text-lg group bg-slate-900/50 disabled:opacity-50"
             >
-              <Shuffle size={20} className="group-hover:rotate-180 transition-transform duration-500 text-emerald-500" />
-              <span>Generate Random Beatdown From Exicon</span>
+              {isRandomizing ? (
+                <div className="w-5 h-5 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
+              ) : (
+                <Shuffle size={20} className="group-hover:rotate-180 transition-transform duration-500 text-emerald-500" />
+              )}
+              <span>{isRandomizing ? 'Randomizing...' : 'Generate Random Beatdown From Exicon'}</span>
             </button>
           </div>
 
