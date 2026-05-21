@@ -325,23 +325,19 @@ export default function App() {
               </button>
               <button
                 onClick={() => {
-                  const rawName = prompt("Exercise Name?");
-                  if (rawName) {
-                    const cleanName = rawName.replace(/<[^>]*>?/gm, '').trim().substring(0, 100);
-                    if (cleanName) {
-                      const rawReps = prompt("Reps/Duration?");
-                      const cleanReps = (rawReps || '').replace(/<[^>]*>?/gm, '').trim().substring(0, 50);
-                      setPlan(prev => ({
-                        ...prev,
-                        exercises: [...prev.exercises, {
-                          id: Math.random().toString(36).substr(2, 9),
-                          name: cleanName,
-                          reps: cleanReps,
-                          category: 'The Thang',
-                          completed: false
-                        }]
-                      }));
-                    }
+                  const name = prompt("Exercise Name?");
+                  if (name) {
+                    const reps = prompt("Reps/Duration?");
+                    setPlan(prev => ({
+                      ...prev,
+                      exercises: [...prev.exercises, {
+                        id: crypto.randomUUID(),
+                        name,
+                        reps: reps || '',
+                        category: 'The Thang',
+                        completed: false
+                      }]
+                    }));
                   }
                 }}
                 className="flex items-center justify-center gap-2 p-3 rounded-xl border border-slate-800 text-slate-400 hover:bg-slate-800/50 transition-all text-sm"
