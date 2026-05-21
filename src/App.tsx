@@ -19,6 +19,7 @@ import {
 import { Exercise, WorkoutPlan } from './types';
 import { WorkoutTimer } from './components/WorkoutTimer';
 import { ExerciseItem } from './components/ExerciseItem';
+import { Clock } from './components/Clock';
 
 const INITIAL_PLAN: WorkoutPlan = {
   title: "THE SNOW SHOVEL GAUNTLET",
