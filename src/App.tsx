@@ -19,6 +19,7 @@ import {
 import { Exercise, WorkoutPlan } from './types';
 import { WorkoutTimer } from './components/WorkoutTimer';
 import { ExerciseItem } from './components/ExerciseItem';
+import { Clock } from './components/Clock';
 
 const INITIAL_PLAN: WorkoutPlan = {
   title: "THE SNOW SHOVEL GAUNTLET",
@@ -330,7 +331,7 @@ export default function App() {
                     setPlan(prev => ({
                       ...prev,
                       exercises: [...prev.exercises, {
-                        id: Math.random().toString(36).substr(2, 9),
+                        id: crypto.randomUUID(),
                         name,
                         reps: reps || '',
                         category: 'The Thang',
