@@ -19,6 +19,7 @@ import {
 import { Exercise, WorkoutPlan } from './types';
 import { WorkoutTimer } from './components/WorkoutTimer';
 import { ExerciseItem } from './components/ExerciseItem';
+import { Clock } from './components/Clock';
 
 const INITIAL_PLAN: WorkoutPlan = {
   title: "THE SNOW SHOVEL GAUNTLET",
@@ -106,7 +107,11 @@ export default function App() {
       const { default: exercisesData } = await import('./data/exercises.json');
 
       const getRandom = (arr: any[], n: number) => {
-        const shuffled = [...arr].sort(() => 0.5 - Math.random());
+        const shuffled = [...arr];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
         return shuffled.slice(0, n);
       };
 
