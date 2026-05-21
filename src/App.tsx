@@ -78,12 +78,6 @@ export default function App() {
   const [showImportModal, setShowImportModal] = useState(false);
   const [importText, setImportText] = useState('');
   const [themeInput, setThemeInput] = useState('');
-  const [currentTime, setCurrentTime] = useState(new Date());
-
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   useEffect(() => {
     localStorage.setItem('f3-q-sheet-plan', JSON.stringify(plan));
@@ -97,14 +91,14 @@ export default function App() {
     }
   }, [activeExerciseId]);
 
-  const toggleExercise = (id: string) => {
+  const toggleExercise = useCallback((id: string) => {
     setPlan(prev => ({
       ...prev,
       exercises: prev.exercises.map(ex =>
         ex.id === id ? { ...ex, completed: !ex.completed } : ex
       )
     }));
-  };
+  }, []);
 
   const handleRandomize = async () => {
     setIsRandomizing(true);
@@ -163,11 +157,7 @@ export default function App() {
           <Zap className="text-emerald-500" size={20} />
           <h1 className="text-lg font-display font-bold tracking-tight">F3 Q-Sheet</h1>
         </div>
-        <div className="text-right">
-          <div className="text-[10px] font-mono text-slate-500 uppercase">
-            {currentTime.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })}
-          </div>
-        </div>
+        <Clock variant="mobile" />
       </div>
 
       <div className="max-w-6xl mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -182,14 +172,7 @@ export default function App() {
                 </div>
                 <h1 className="text-3xl font-display font-bold tracking-tight">F3 Q-Sheet</h1>
               </div>
-              <div className="text-right">
-                <div className="text-sm font-mono text-slate-500 uppercase tracking-widest">
-                  {currentTime.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-                </div>
-                <div className="text-xl font-mono font-bold text-slate-300">
-                  {currentTime.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })}
-                </div>
-              </div>
+              <Clock variant="desktop" />
             </div>
 
             <div className="flex flex-wrap gap-4 text-sm text-slate-400">

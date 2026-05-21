@@ -9,7 +9,7 @@ interface ExerciseItemProps {
   onSelect: (id: string) => void;
 }
 
-export const ExerciseItem: React.FC<ExerciseItemProps> = ({
+export const ExerciseItem: React.FC<ExerciseItemProps> = React.memo(({
   exercise,
   isActive,
   onToggle,
@@ -56,4 +56,4 @@ export const ExerciseItem: React.FC<ExerciseItemProps> = ({
       />
     </div>
   );
-};
+});
