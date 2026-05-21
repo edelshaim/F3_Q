@@ -14,18 +14,26 @@ for (let i = 1; i < lines.length; i++) {
     if (!line) continue;
 
     // Custom split ignoring commas inside quotes
+    // Optimization: using String.substring() instead of character-by-character
+    // concatenation to avoid excessive string allocation overhead and speed up parsing.
     const parts = [];
-    let currentWord = '';
+    let start = 0;
     let inQuotes = false;
-    for (let char of line) {
-        if (char === '"') inQuotes = !inQuotes;
-        else if (char === ',' && !inQuotes) {
+    let currentWord = '';
+    for (let j = 0; j < line.length; j++) {
+        const char = line[j];
+        if (char === '"') {
+            currentWord += line.substring(start, j);
+            inQuotes = !inQuotes;
+            start = j + 1;
+        } else if (char === ',' && !inQuotes) {
+            currentWord += line.substring(start, j);
             parts.push(currentWord);
             currentWord = '';
-        } else {
-            currentWord += char;
+            start = j + 1;
         }
     }
+    currentWord += line.substring(start);
     parts.push(currentWord);
 
     if (parts.length >= 3) {
