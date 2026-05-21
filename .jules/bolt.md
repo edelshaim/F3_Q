@@ -1,3 +1,3 @@
-## 2024-05-21 - Optimization of large static assets
-**Learning:** Loading large, static JSON files (like 300KB) statically at the top of a React file forces the bundler to include it in the main chunk, significantly slowing down initial load time.
-**Action:** Use dynamic imports (e.g., `await import('./data.json')`) inside event handlers when the data is not immediately needed on initial render. This allows Vite to automatically code-split the JSON into a separate chunk.
+## 2026-05-21 - Grouping Array Iterations in Render Loops
+**Learning:** React render loops can suffer from redundant O(N*M) operations when filtering arrays inside a mapping function.
+**Action:** Use `useMemo` to group arrays once per dependency change (O(N)), then perform simple O(1) lookups during the render loop. This significantly cuts down unnecessary traversal overhead.

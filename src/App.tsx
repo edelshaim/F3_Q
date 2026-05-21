@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   ClipboardList,
@@ -17,6 +17,7 @@ import {
   Shuffle
 } from 'lucide-react';
 import { Exercise, WorkoutPlan } from './types';
+import { Clock } from './components/Clock';
 import { WorkoutTimer } from './components/WorkoutTimer';
 import { ExerciseItem } from './components/ExerciseItem';
 
@@ -149,6 +150,16 @@ export default function App() {
 
   const categories: Exercise['category'][] = ['Warm-up', 'The Thang', 'Mary', 'Cool-down'];
 
+  const groupedExercises = useMemo(() => {
+    const grouped = {} as Record<string, Exercise[]>;
+    for (let i = 0; i < plan.exercises.length; i++) {
+      const ex = plan.exercises[i];
+      if (!grouped[ex.category]) grouped[ex.category] = [];
+      grouped[ex.category].push(ex);
+    }
+    return grouped;
+  }, [plan.exercises]);
+
   return (
     <div className="min-h-screen bg-[#0f1115] text-slate-100 pb-24 lg:pb-8">
       {/* Mobile Top Bar */}
@@ -206,7 +217,7 @@ export default function App() {
           {/* Exercise List */}
           <div className="space-y-6 sm:space-y-8">
             {categories.map(category => {
-              const categoryExercises = plan.exercises.filter(ex => ex.category === category);
+              const categoryExercises = groupedExercises[category] || [];
               if (categoryExercises.length === 0) return null;
 
               return (
