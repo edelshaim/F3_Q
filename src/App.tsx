@@ -18,8 +18,9 @@ import {
 } from 'lucide-react';
 import { Exercise, WorkoutPlan } from './types';
 import { WorkoutTimer } from './components/WorkoutTimer';
+import { Clock } from './components/Clock';
 import { ExerciseItem } from './components/ExerciseItem';
-import { Clock } from "./components/Clock";
+import { Clock } from './components/Clock';
 
 const INITIAL_PLAN: WorkoutPlan = {
   title: "THE SNOW SHOVEL GAUNTLET",
@@ -325,13 +326,20 @@ export default function App() {
               </button>
               <button
                 onClick={() => {
-                  const name = prompt("Exercise Name?");
+                  let name = prompt("Exercise Name?");
                   if (name) {
-                    const reps = prompt("Reps/Duration?");
+                    name = name.replace(/<[^>]*>?/gm, '').trim().substring(0, 100);
+                    if (!name) return;
+
+                    let reps = prompt("Reps/Duration?");
+                    if (reps) {
+                        reps = reps.replace(/<[^>]*>?/gm, '').trim().substring(0, 50);
+                    }
+
                     setPlan(prev => ({
                       ...prev,
                       exercises: [...prev.exercises, {
-                        id: Math.random().toString(36).substr(2, 9),
+                        id: crypto.randomUUID(),
                         name,
                         reps: reps || '',
                         category: 'The Thang',
