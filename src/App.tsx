@@ -14,7 +14,8 @@ import {
   MessageSquareText,
   X,
   Send,
-  Shuffle
+  Shuffle,
+  Clock
 } from 'lucide-react';
 import { Exercise, WorkoutPlan } from './types';
 import { WorkoutTimer } from './components/WorkoutTimer';
