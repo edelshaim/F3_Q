@@ -107,7 +107,7 @@ export default function App() {
     try {
       const { default: exercisesData } = await import('./data/exercises.json');
 
-      const getRandom = (arr: any[], n: number) => {
+      const getRandom = <T,>(arr: T[], n: number) => {
         const shuffled = [...arr].sort(() => 0.5 - Math.random());
         return shuffled.slice(0, n);
       };
