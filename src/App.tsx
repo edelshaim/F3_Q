@@ -1,3 +1,4 @@
+import { Clock } from "./components/Clock";
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -137,12 +138,8 @@ export default function App() {
     }
   };
 
-  const handleGenerate = async () => {
-    // Disabled for Day 1
-  };
-
   const handleImport = async () => {
-    // Disabled for Day 1
+    alert('Not implemented yet!');
   };
 
   const activeExercise = plan.exercises.find(ex => ex.id === activeExerciseId);
