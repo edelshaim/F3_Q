@@ -6,7 +6,9 @@ interface TimerProps {
   onTick?: (seconds: number) => void;
 }
 
-export const WorkoutTimer: React.FC<TimerProps> = ({ onTick }) => {
+// ⚡ Bolt: Wrapped WorkoutTimer in React.memo to prevent unnecessary re-renders when parent App updates.
+// Without this, every App state change (like checking off an exercise) would re-render the timer.
+export const WorkoutTimer: React.FC<TimerProps> = React.memo(({ onTick }) => {
   const [seconds, setSeconds] = useState(0);
   const [status, setStatus] = useState<TimerStatus>('idle');
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -78,4 +80,4 @@ export const WorkoutTimer: React.FC<TimerProps> = ({ onTick }) => {
       </div>
     </div>
   );
-};
+});
