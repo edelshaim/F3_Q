@@ -1,3 +1,3 @@
-## 2024-05-21 - Optimization of large static assets
-**Learning:** Loading large, static JSON files (like 300KB) statically at the top of a React file forces the bundler to include it in the main chunk, significantly slowing down initial load time.
-**Action:** Use dynamic imports (e.g., `await import('./data.json')`) inside event handlers when the data is not immediately needed on initial render. This allows Vite to automatically code-split the JSON into a separate chunk.
+## 2024-05-25 - React.memo() with useMemo is critical for nested loop optimization
+**Learning:** Moving constant configuration arrays out of component scope or inner functions is required when using them within useMemo, otherwise it causes a dependency warning.
+**Action:** Extract constant static arrays outside of hooks or the main component whenever they're used inside useMemo or useEffect dependency arrays.

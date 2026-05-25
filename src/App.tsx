@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   ClipboardList,
@@ -20,7 +20,6 @@ import { Exercise, WorkoutPlan } from './types';
 import { WorkoutTimer } from './components/WorkoutTimer';
 import { Clock } from './components/Clock';
 import { ExerciseItem } from './components/ExerciseItem';
-import { Clock } from './components/Clock';
 
 const INITIAL_PLAN: WorkoutPlan = {
   title: "THE SNOW SHOVEL GAUNTLET",
@@ -147,9 +146,25 @@ export default function App() {
     // Disabled for Day 1
   };
 
-  const activeExercise = plan.exercises.find(ex => ex.id === activeExerciseId);
+  // ⚡ Bolt Optimization: Memoize the active exercise lookup to prevent O(N) array search on every render.
+  const activeExercise = useMemo(() => {
+    return plan.exercises.find(ex => ex.id === activeExerciseId);
+  }, [plan.exercises, activeExerciseId]);
 
   const categories: Exercise['category'][] = ['Warm-up', 'The Thang', 'Mary', 'Cool-down'];
+
+  // ⚡ Bolt Optimization: Pre-group exercises by category. This replaces an O(C * N) filtering loop
+  // during render with a single O(N) pass that is only recalculated when the exercise list changes.
+  const exercisesByCategory = useMemo(() => {
+    const grouped = {} as Record<Exercise['category'], Exercise[]>;
+    categories.forEach(cat => grouped[cat] = []);
+    plan.exercises.forEach(ex => {
+      if (grouped[ex.category]) {
+        grouped[ex.category].push(ex);
+      }
+    });
+    return grouped;
+  }, [plan.exercises]);
 
   return (
     <div className="min-h-screen bg-[#0f1115] text-slate-100 pb-24 lg:pb-8">
@@ -208,8 +223,8 @@ export default function App() {
           {/* Exercise List */}
           <div className="space-y-6 sm:space-y-8">
             {categories.map(category => {
-              const categoryExercises = plan.exercises.filter(ex => ex.category === category);
-              if (categoryExercises.length === 0) return null;
+              const categoryExercises = exercisesByCategory[category];
+              if (!categoryExercises || categoryExercises.length === 0) return null;
 
               return (
                 <section key={category} className="space-y-3 sm:space-y-4">

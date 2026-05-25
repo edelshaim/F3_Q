@@ -4,7 +4,9 @@ interface ClockProps {
   variant: 'mobile' | 'desktop';
 }
 
-export const Clock: React.FC<ClockProps> = ({ variant }) => {
+// ⚡ Bolt Optimization: Memoize the Clock component to prevent it from re-rendering
+// unnecessarily when its parent re-renders, as the Clock only needs to update based on its internal interval.
+export const Clock: React.FC<ClockProps> = React.memo(({ variant }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -32,4 +34,4 @@ export const Clock: React.FC<ClockProps> = ({ variant }) => {
       </div>
     </div>
   );
-};
+});
