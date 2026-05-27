@@ -20,7 +20,6 @@ import { Exercise, WorkoutPlan } from './types';
 import { WorkoutTimer } from './components/WorkoutTimer';
 import { Clock } from './components/Clock';
 import { ExerciseItem } from './components/ExerciseItem';
-import { Clock } from './components/Clock';
 
 const INITIAL_PLAN: WorkoutPlan = {
   title: "THE SNOW SHOVEL GAUNTLET",
@@ -107,9 +106,21 @@ export default function App() {
     try {
       const { default: exercisesData } = await import('./data/exercises.json');
 
+      // ⚡ Bolt: Replaced O(n log n) sorting on full array with O(k) set-based random selection
+      // This is much faster since it only picks 'n' items out of the 3500+ items without sorting all of them
       const getRandom = <T,>(arr: T[], n: number) => {
-        const shuffled = [...arr].sort(() => 0.5 - Math.random());
-        return shuffled.slice(0, n);
+        const result: T[] = [];
+        const usedIndices = new Set<number>();
+        const count = Math.min(n, arr.length);
+
+        while (result.length < count) {
+          const randomIndex = Math.floor(Math.random() * arr.length);
+          if (!usedIndices.has(randomIndex)) {
+            usedIndices.add(randomIndex);
+            result.push(arr[randomIndex]);
+          }
+        }
+        return result;
       };
 
       if (!exercisesData || exercisesData.length === 0) return;
