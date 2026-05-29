@@ -20,7 +20,6 @@ import { Exercise, WorkoutPlan } from './types';
 import { WorkoutTimer } from './components/WorkoutTimer';
 import { Clock } from './components/Clock';
 import { ExerciseItem } from './components/ExerciseItem';
-import { Clock } from './components/Clock';
 
 const INITIAL_PLAN: WorkoutPlan = {
   title: "THE SNOW SHOVEL GAUNTLET",
@@ -107,9 +106,17 @@ export default function App() {
     try {
       const { default: exercisesData } = await import('./data/exercises.json');
 
+      // ⚡ Bolt Performance Optimization:
+      // Replaced O(n log n) full array sort (.sort(() => 0.5 - Math.random()))
+      // with an O(k) partial Fisher-Yates shuffle.
+      // This prevents unnecessarily shuffling the entire array of 800+ exercises.
       const getRandom = <T,>(arr: T[], n: number) => {
-        const shuffled = [...arr].sort(() => 0.5 - Math.random());
-        return shuffled.slice(0, n);
+        const result = [...arr];
+        for (let i = 0; i < n && i < result.length; i++) {
+          const j = i + Math.floor(Math.random() * (result.length - i));
+          [result[i], result[j]] = [result[j], result[i]];
+        }
+        return result.slice(0, n);
       };
 
       if (!exercisesData || exercisesData.length === 0) return;
