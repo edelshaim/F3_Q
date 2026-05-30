@@ -20,7 +20,7 @@ import { Exercise, WorkoutPlan } from './types';
 import { WorkoutTimer } from './components/WorkoutTimer';
 import { Clock } from './components/Clock';
 import { ExerciseItem } from './components/ExerciseItem';
-import { Clock } from './components/Clock';
+import { useMediaQuery } from './hooks/useMediaQuery';
 
 const INITIAL_PLAN: WorkoutPlan = {
   title: "THE SNOW SHOVEL GAUNTLET",
@@ -60,6 +60,11 @@ const INITIAL_PLAN: WorkoutPlan = {
 };
 
 export default function App() {
+  // Optimization: useMediaQuery conditionally mounts/unmounts components instead of just hiding them with CSS.
+  // Impact: Prevents duplicate state updates and background intervals for mobile/desktop versions
+  // of components like Clock and WorkoutTimer, significantly reducing main thread idle execution.
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
+
   const [plan, setPlan] = useState<WorkoutPlan>(() => {
     const saved = localStorage.getItem('f3-q-sheet-plan');
     if (saved) {
@@ -154,40 +159,44 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#0f1115] text-slate-100 pb-24 lg:pb-8">
       {/* Mobile Top Bar */}
-      <div className="lg:hidden sticky top-0 z-30 bg-[#0f1115]/80 backdrop-blur-lg border-b border-slate-800 px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <Zap className="text-emerald-500" size={20} />
-          <h1 className="text-lg font-display font-bold tracking-tight">F3 Q-Sheet</h1>
+      {!isDesktop && (
+        <div className="lg:hidden sticky top-0 z-30 bg-[#0f1115]/80 backdrop-blur-lg border-b border-slate-800 px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Zap className="text-emerald-500" size={20} />
+            <h1 className="text-lg font-display font-bold tracking-tight">F3 Q-Sheet</h1>
+          </div>
+          <Clock variant="mobile" />
         </div>
-        <Clock variant="mobile" />
-      </div>
+      )}
 
       <div className="max-w-6xl mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
 
         {/* Left Column: Header & Exercises */}
         <div className="lg:col-span-7 space-y-6 sm:space-y-8">
-          <header className="hidden lg:block space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="bg-emerald-500 p-2 rounded-lg shadow-lg shadow-emerald-500/20">
-                  <Zap className="text-white" size={24} />
+          {isDesktop && (
+            <header className="hidden lg:block space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="bg-emerald-500 p-2 rounded-lg shadow-lg shadow-emerald-500/20">
+                    <Zap className="text-white" size={24} />
+                  </div>
+                  <h1 className="text-3xl font-display font-bold tracking-tight">F3 Q-Sheet</h1>
                 </div>
-                <h1 className="text-3xl font-display font-bold tracking-tight">F3 Q-Sheet</h1>
+                <Clock variant="desktop" />
               </div>
-              <Clock variant="desktop" />
-            </div>
 
-            <div className="flex flex-wrap gap-4 text-sm text-slate-400">
-              <div className="flex items-center space-x-2 bg-slate-900/50 px-3 py-1.5 rounded-full border border-slate-800">
-                <MapPin size={14} />
-                <span>{plan.location}</span>
+              <div className="flex flex-wrap gap-4 text-sm text-slate-400">
+                <div className="flex items-center space-x-2 bg-slate-900/50 px-3 py-1.5 rounded-full border border-slate-800">
+                  <MapPin size={14} />
+                  <span>{plan.location}</span>
+                </div>
+                <div className="flex items-center space-x-2 bg-slate-900/50 px-3 py-1.5 rounded-full border border-slate-800">
+                  <ClipboardList size={14} />
+                  <span>{plan.exercises.length} Exercises</span>
+                </div>
               </div>
-              <div className="flex items-center space-x-2 bg-slate-900/50 px-3 py-1.5 rounded-full border border-slate-800">
-                <ClipboardList size={14} />
-                <span>{plan.exercises.length} Exercises</span>
-              </div>
-            </div>
-          </header>
+            </header>
+          )}
 
           {/* Day 1 Randomizer Bar */}
           <div className="flex flex-col sm:flex-row gap-3">
@@ -243,13 +252,16 @@ export default function App() {
         <div className="lg:col-span-5 space-y-8">
           <div className="lg:sticky lg:top-8 space-y-8">
             {/* Timer - Hidden on mobile, shown in bottom bar instead? Or just keep it here but make it prominent */}
-            <div className="hidden lg:block">
-              <WorkoutTimer />
-            </div>
+            {isDesktop && (
+              <div className="hidden lg:block">
+                <WorkoutTimer />
+              </div>
+            )}
 
             {/* Active Exercise Detail - Desktop Version */}
-            <div className="hidden lg:block">
-              <AnimatePresence mode="wait">
+            {isDesktop && (
+              <div className="hidden lg:block">
+                <AnimatePresence mode="wait">
                 {activeExercise ? (
                   <motion.div
                     key={activeExercise.id}
@@ -312,8 +324,9 @@ export default function App() {
                     </div>
                   </div>
                 )}
-              </AnimatePresence>
-            </div>
+                </AnimatePresence>
+              </div>
+            )}
 
             {/* Quick Actions - Desktop */}
             <div className="hidden lg:grid grid-cols-2 gap-4">
@@ -430,11 +443,13 @@ export default function App() {
       </AnimatePresence>
 
       {/* Mobile Sticky Bottom Timer Bar */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 p-4 pointer-events-none">
-        <div className="max-w-md mx-auto pointer-events-auto">
-          <WorkoutTimer />
+      {!isDesktop && (
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 p-4 pointer-events-none">
+          <div className="max-w-md mx-auto pointer-events-auto">
+            <WorkoutTimer />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Natural Language Import Modal */}
       <AnimatePresence>

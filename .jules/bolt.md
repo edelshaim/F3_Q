@@ -1,3 +1,7 @@
 ## 2024-05-21 - Optimization of large static assets
 **Learning:** Loading large, static JSON files (like 300KB) statically at the top of a React file forces the bundler to include it in the main chunk, significantly slowing down initial load time.
 **Action:** Use dynamic imports (e.g., `await import('./data.json')`) inside event handlers when the data is not immediately needed on initial render. This allows Vite to automatically code-split the JSON into a separate chunk.
+
+## 2026-05-30 - Duplicate component instances from CSS hiding
+**Learning:** Hiding components using CSS classes (like `hidden lg:block` vs `lg:hidden`) mounts both the mobile and desktop versions of the component simultaneously. If the component contains state, background intervals (like `setInterval`), or expensive effects, they will run redundantly in the background, consuming CPU resources unnecessarily.
+**Action:** Use JavaScript-based conditional rendering (e.g., `isDesktop = useMediaQuery('(min-width: 1024px)')`) to mount only the component version that is actively needed for the current viewport size, effectively killing background work for hidden components. Ensure proper lazy state initialization in custom hooks to prevent double renders.
