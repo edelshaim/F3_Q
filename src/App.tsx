@@ -20,7 +20,7 @@ import { Exercise, WorkoutPlan } from './types';
 import { WorkoutTimer } from './components/WorkoutTimer';
 import { Clock } from './components/Clock';
 import { ExerciseItem } from './components/ExerciseItem';
-import { Clock } from './components/Clock';
+import { useMediaQuery } from './hooks/useMediaQuery';
 
 const INITIAL_PLAN: WorkoutPlan = {
   title: "THE SNOW SHOVEL GAUNTLET",
@@ -80,6 +80,10 @@ export default function App() {
   const [showImportModal, setShowImportModal] = useState(false);
   const [importText, setImportText] = useState('');
   const [themeInput, setThemeInput] = useState('');
+
+  // Performance Optimization: Use JS-based media query to conditionally render components
+  // Avoids running multiple duplicate instances of Clock and WorkoutTimer (and their background intervals)
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
 
   useEffect(() => {
     localStorage.setItem('f3-q-sheet-plan', JSON.stringify(plan));
@@ -159,7 +163,7 @@ export default function App() {
           <Zap className="text-emerald-500" size={20} />
           <h1 className="text-lg font-display font-bold tracking-tight">F3 Q-Sheet</h1>
         </div>
-        <Clock variant="mobile" />
+        {!isDesktop && <Clock variant="mobile" />}
       </div>
 
       <div className="max-w-6xl mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -174,7 +178,7 @@ export default function App() {
                 </div>
                 <h1 className="text-3xl font-display font-bold tracking-tight">F3 Q-Sheet</h1>
               </div>
-              <Clock variant="desktop" />
+              {isDesktop && <Clock variant="desktop" />}
             </div>
 
             <div className="flex flex-wrap gap-4 text-sm text-slate-400">
@@ -244,7 +248,7 @@ export default function App() {
           <div className="lg:sticky lg:top-8 space-y-8">
             {/* Timer - Hidden on mobile, shown in bottom bar instead? Or just keep it here but make it prominent */}
             <div className="hidden lg:block">
-              <WorkoutTimer />
+              {isDesktop && <WorkoutTimer />}
             </div>
 
             {/* Active Exercise Detail - Desktop Version */}
@@ -432,7 +436,7 @@ export default function App() {
       {/* Mobile Sticky Bottom Timer Bar */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 p-4 pointer-events-none">
         <div className="max-w-md mx-auto pointer-events-auto">
-          <WorkoutTimer />
+          {!isDesktop && <WorkoutTimer />}
         </div>
       </div>
 
