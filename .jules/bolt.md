@@ -1,3 +1,6 @@
 ## 2024-05-21 - Optimization of large static assets
 **Learning:** Loading large, static JSON files (like 300KB) statically at the top of a React file forces the bundler to include it in the main chunk, significantly slowing down initial load time.
 **Action:** Use dynamic imports (e.g., `await import('./data.json')`) inside event handlers when the data is not immediately needed on initial render. This allows Vite to automatically code-split the JSON into a separate chunk.
+## 2026-06-02 - Component Lifecycle Over-Instantiation
+**Learning:** Hiding duplicate component variants (like desktop vs mobile timers or clocks) via Tailwind CSS (`hidden lg:block`) keeps them instantiated in the React Virtual DOM, meaning multiple instances of `setInterval` hooks run simultaneously in the background causing completely unnecessary render and state recalculations.
+**Action:** Use JS-based conditional rendering (via hooks like `useMediaQuery`) when displaying layout variants of stateful components rather than just hiding them with CSS classes.
