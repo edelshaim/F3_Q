@@ -1,32 +1,26 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useSyncExternalStore, useEffect } from 'react';
 import { Play, Pause, RotateCcw, Timer as TimerIcon } from 'lucide-react';
-import { TimerStatus } from '../types';
+import { timerStore } from '../store/timerStore';
 
 interface TimerProps {
   onTick?: (seconds: number) => void;
 }
 
 export const WorkoutTimer: React.FC<TimerProps> = ({ onTick }) => {
-  const [seconds, setSeconds] = useState(0);
-  const [status, setStatus] = useState<TimerStatus>('idle');
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  // ⚡ Bolt Optimization: Extracted local timer state to a global Vanilla JS pub/sub store.
+  // Why: Allows the WorkoutTimer to be conditionally rendered across layouts without losing its progress or running multiple intervals.
+  // Impact: Safe to unmount/remount across breakpoints; prevents background memory leaks from orphan intervals.
+  const { seconds, status } = useSyncExternalStore(
+    timerStore.subscribe,
+    timerStore.getState
+  );
 
+  // Trigger onTick callback if provided
   useEffect(() => {
-    if (status === 'running') {
-      timerRef.current = setInterval(() => {
-        setSeconds((prev) => {
-          const next = prev + 1;
-          onTick?.(next);
-          return next;
-        });
-      }, 1000);
-    } else {
-      if (timerRef.current) clearInterval(timerRef.current);
+    if (onTick && seconds > 0) {
+      onTick(seconds);
     }
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [status, onTick]);
+  }, [seconds, onTick]);
 
   const formatTime = (totalSeconds: number) => {
     const hrs = Math.floor(totalSeconds / 3600);
@@ -38,12 +32,11 @@ export const WorkoutTimer: React.FC<TimerProps> = ({ onTick }) => {
   };
 
   const toggleTimer = () => {
-    setStatus((prev) => (prev === 'running' ? 'paused' : 'running'));
+    timerStore.toggleTimer();
   };
 
   const resetTimer = () => {
-    setStatus('idle');
-    setSeconds(0);
+    timerStore.resetTimer();
   };
 
   return (
