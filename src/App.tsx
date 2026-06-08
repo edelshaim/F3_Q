@@ -20,7 +20,7 @@ import { Exercise, WorkoutPlan } from './types';
 import { WorkoutTimer } from './components/WorkoutTimer';
 import { Clock } from './components/Clock';
 import { ExerciseItem } from './components/ExerciseItem';
-import { Clock } from './components/Clock';
+import { useMediaQuery } from './hooks/useMediaQuery';
 
 const INITIAL_PLAN: WorkoutPlan = {
   title: "THE SNOW SHOVEL GAUNTLET",
@@ -74,6 +74,9 @@ export default function App() {
   const [activeExerciseId, setActiveExerciseId] = useState<string | null>(() => {
     return localStorage.getItem('f3-q-sheet-active') || null;
   });
+
+  // Viewport detection
+  const isDesktop = useMediaQuery('(min-width: 1024px)'); // lg breakpoint is 1024px
   const [isGenerating, setIsGenerating] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
   const [isRandomizing, setIsRandomizing] = useState(false);
@@ -242,10 +245,12 @@ export default function App() {
         {/* Right Column: Timer & Details */}
         <div className="lg:col-span-5 space-y-8">
           <div className="lg:sticky lg:top-8 space-y-8">
-            {/* Timer - Hidden on mobile, shown in bottom bar instead? Or just keep it here but make it prominent */}
-            <div className="hidden lg:block">
-              <WorkoutTimer />
-            </div>
+            {/* Timer - Desktop */}
+            {isDesktop && (
+              <div>
+                <WorkoutTimer />
+              </div>
+            )}
 
             {/* Active Exercise Detail - Desktop Version */}
             <div className="hidden lg:block">
@@ -430,11 +435,13 @@ export default function App() {
       </AnimatePresence>
 
       {/* Mobile Sticky Bottom Timer Bar */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 p-4 pointer-events-none">
-        <div className="max-w-md mx-auto pointer-events-auto">
-          <WorkoutTimer />
+      {!isDesktop && (
+        <div className="fixed bottom-0 left-0 right-0 z-30 p-4 pointer-events-none">
+          <div className="max-w-md mx-auto pointer-events-auto">
+            <WorkoutTimer />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Natural Language Import Modal */}
       <AnimatePresence>
