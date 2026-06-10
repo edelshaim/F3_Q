@@ -1,32 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useSyncExternalStore, useEffect } from 'react';
 import { Play, Pause, RotateCcw, Timer as TimerIcon } from 'lucide-react';
-import { TimerStatus } from '../types';
+import { timerStore } from '../store/timerStore';
 
 interface TimerProps {
   onTick?: (seconds: number) => void;
 }
 
 export const WorkoutTimer: React.FC<TimerProps> = ({ onTick }) => {
-  const [seconds, setSeconds] = useState(0);
-  const [status, setStatus] = useState<TimerStatus>('idle');
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  // PERFORMANCE OPTIMIZATION: Moved state out of component to avoid losing state when conditionally rendered, and decouple intervals.
+  const { seconds, status } = useSyncExternalStore(timerStore.subscribe, timerStore.getSnapshot);
 
   useEffect(() => {
-    if (status === 'running') {
-      timerRef.current = setInterval(() => {
-        setSeconds((prev) => {
-          const next = prev + 1;
-          onTick?.(next);
-          return next;
-        });
-      }, 1000);
-    } else {
-      if (timerRef.current) clearInterval(timerRef.current);
-    }
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [status, onTick]);
+    timerStore.setOnTick(onTick);
+  }, [onTick]);
 
   const formatTime = (totalSeconds: number) => {
     const hrs = Math.floor(totalSeconds / 3600);
@@ -38,12 +24,11 @@ export const WorkoutTimer: React.FC<TimerProps> = ({ onTick }) => {
   };
 
   const toggleTimer = () => {
-    setStatus((prev) => (prev === 'running' ? 'paused' : 'running'));
+    timerStore.toggle();
   };
 
   const resetTimer = () => {
-    setStatus('idle');
-    setSeconds(0);
+    timerStore.reset();
   };
 
   return (
