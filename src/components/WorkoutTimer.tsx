@@ -1,32 +1,22 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useSyncExternalStore, useEffect } from 'react';
 import { Play, Pause, RotateCcw, Timer as TimerIcon } from 'lucide-react';
-import { TimerStatus } from '../types';
+import { timerStore } from '../store/timerStore';
 
 interface TimerProps {
   onTick?: (seconds: number) => void;
 }
 
 export const WorkoutTimer: React.FC<TimerProps> = ({ onTick }) => {
-  const [seconds, setSeconds] = useState(0);
-  const [status, setStatus] = useState<TimerStatus>('idle');
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const { seconds, status } = useSyncExternalStore(
+    timerStore.subscribe,
+    timerStore.getSnapshot
+  );
 
   useEffect(() => {
-    if (status === 'running') {
-      timerRef.current = setInterval(() => {
-        setSeconds((prev) => {
-          const next = prev + 1;
-          onTick?.(next);
-          return next;
-        });
-      }, 1000);
-    } else {
-      if (timerRef.current) clearInterval(timerRef.current);
+    if (onTick && status === 'running') {
+      onTick(seconds);
     }
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [status, onTick]);
+  }, [seconds, status, onTick]);
 
   const formatTime = (totalSeconds: number) => {
     const hrs = Math.floor(totalSeconds / 3600);
@@ -35,15 +25,6 @@ export const WorkoutTimer: React.FC<TimerProps> = ({ onTick }) => {
     return `${hrs > 0 ? hrs.toString().padStart(2, '0') + ':' : ''}${mins
       .toString()
       .padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const toggleTimer = () => {
-    setStatus((prev) => (prev === 'running' ? 'paused' : 'running'));
-  };
-
-  const resetTimer = () => {
-    setStatus('idle');
-    setSeconds(0);
   };
 
   return (
@@ -60,7 +41,7 @@ export const WorkoutTimer: React.FC<TimerProps> = ({ onTick }) => {
 
       <div className="flex space-x-2 sm:space-x-4">
         <button
-          onClick={toggleTimer}
+          onClick={timerStore.toggle}
           className={`p-3 sm:p-4 rounded-xl sm:rounded-full transition-all ${
             status === 'running'
               ? 'bg-amber-500/20 text-amber-500 hover:bg-amber-500/30'
@@ -70,7 +51,7 @@ export const WorkoutTimer: React.FC<TimerProps> = ({ onTick }) => {
           {status === 'running' ? <Pause size={20} /> : <Play size={20} />}
         </button>
         <button
-          onClick={resetTimer}
+          onClick={timerStore.reset}
           className="p-3 sm:p-4 rounded-xl sm:rounded-full bg-slate-800 text-slate-400 hover:bg-slate-700 transition-all"
         >
           <RotateCcw size={20} />
