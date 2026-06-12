@@ -1,3 +1,3 @@
-## 2024-05-21 - Optimization of large static assets
-**Learning:** Loading large, static JSON files (like 300KB) statically at the top of a React file forces the bundler to include it in the main chunk, significantly slowing down initial load time.
-**Action:** Use dynamic imports (e.g., `await import('./data.json')`) inside event handlers when the data is not immediately needed on initial render. This allows Vite to automatically code-split the JSON into a separate chunk.
+## 2024-06-12 - Conditional Rendering vs CSS display:none
+**Learning:** The App component was duplicating heavy DOM nodes (like `WorkoutTimer` which sets intervals) and hiding them via CSS `hidden`/`lg:block`. Because of the duplicate timers, the intervals were doubling up.
+**Action:** Implemented `useMediaQuery` to completely unmount components not in view. However, doing so resets local component state when resizing. Next time, always check if state persistence across breakpoints is required (like with a running timer) and extract it to a global store (e.g. `useSyncExternalStore`) before shifting from CSS hiding to JS conditional rendering.
