@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   ClipboardList,
@@ -20,6 +20,7 @@ import { Exercise, WorkoutPlan } from './types';
 import { WorkoutTimer } from './components/WorkoutTimer';
 import { Clock } from './components/Clock';
 import { ExerciseItem } from './components/ExerciseItem';
+import { useTailwindBreakpoint } from './hooks/useMediaQuery';
 
 const INITIAL_PLAN: WorkoutPlan = {
   title: "THE SNOW SHOVEL GAUNTLET",
@@ -58,6 +59,8 @@ const INITIAL_PLAN: WorkoutPlan = {
   ]
 };
 
+const CATEGORIES: Exercise['category'][] = ['Warm-up', 'The Thang', 'Mary', 'Cool-down'];
+
 export default function App() {
   const [plan, setPlan] = useState<WorkoutPlan>(() => {
     const saved = localStorage.getItem('f3-q-sheet-plan');
@@ -79,6 +82,8 @@ export default function App() {
   const [showImportModal, setShowImportModal] = useState(false);
   const [importText, setImportText] = useState('');
   const [themeInput, setThemeInput] = useState('');
+
+  const isDesktop = useTailwindBreakpoint('lg');
 
   useEffect(() => {
     localStorage.setItem('f3-q-sheet-plan', JSON.stringify(plan));
@@ -106,10 +111,6 @@ export default function App() {
     try {
       const { default: exercisesData } = await import('./data/exercises.json');
 
-      // ⚡ Bolt Performance Optimization:
-      // Replaced O(n log n) full array sort (.sort(() => 0.5 - Math.random()))
-      // with an O(k) partial Fisher-Yates shuffle.
-      // This prevents unnecessarily shuffling the entire array of 800+ exercises.
       const getRandom = <T,>(arr: T[], n: number) => {
         const result = [...arr];
         for (let i = 0; i < n && i < result.length; i++) {
@@ -146,55 +147,72 @@ export default function App() {
     }
   };
 
-  const handleGenerate = async () => {
-    // Disabled for Day 1
-  };
-
   const handleImport = async () => {
-    // Disabled for Day 1
+    alert('Import feature is not implemented yet.');
+    setShowImportModal(false);
   };
 
-  const activeExercise = plan.exercises.find(ex => ex.id === activeExerciseId);
+  const activeExercise = useMemo(
+    () => plan.exercises.find(ex => ex.id === activeExerciseId),
+    [plan.exercises, activeExerciseId]
+  );
 
-  const categories: Exercise['category'][] = ['Warm-up', 'The Thang', 'Mary', 'Cool-down'];
+  const exercisesByCategory = useMemo<Record<Exercise['category'], Exercise[]>>(() => {
+    const grouped: Record<Exercise['category'], Exercise[]> = {
+      'Warm-up': [],
+      'The Thang': [],
+      Mary: [],
+      'Cool-down': []
+    };
+    plan.exercises.forEach(ex => {
+      if (Object.prototype.hasOwnProperty.call(grouped, ex.category)) {
+        grouped[ex.category].push(ex);
+      }
+    });
+    return grouped;
+  }, [plan.exercises]);
 
   return (
     <div className="min-h-screen bg-[#0f1115] text-slate-100 pb-24 lg:pb-8">
       {/* Mobile Top Bar */}
-      <div className="lg:hidden sticky top-0 z-30 bg-[#0f1115]/80 backdrop-blur-lg border-b border-slate-800 px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <Zap className="text-emerald-500" size={20} />
-          <h1 className="text-lg font-display font-bold tracking-tight">F3 Q-Sheet</h1>
+      {!isDesktop && (
+        <div className="sticky top-0 z-30 bg-[#0f1115]/80 backdrop-blur-lg border-b border-slate-800 px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Zap className="text-emerald-500" size={20} />
+            <h1 className="text-lg font-display font-bold tracking-tight">F3 Q-Sheet</h1>
+          </div>
+          <Clock variant="mobile" />
         </div>
-        <Clock variant="mobile" />
-      </div>
+      )}
 
       <div className="max-w-6xl mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
 
         {/* Left Column: Header & Exercises */}
         <div className="lg:col-span-7 space-y-6 sm:space-y-8">
-          <header className="hidden lg:block space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="bg-emerald-500 p-2 rounded-lg shadow-lg shadow-emerald-500/20">
-                  <Zap className="text-white" size={24} />
+          {isDesktop && (
+            <header className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="bg-emerald-500 p-2 rounded-lg shadow-lg shadow-emerald-500/20">
+                    <Zap className="text-white" size={24} />
+                  </div>
+                  <h1 className="text-3xl font-display font-bold tracking-tight">F3 Q-Sheet</h1>
                 </div>
-                <h1 className="text-3xl font-display font-bold tracking-tight">F3 Q-Sheet</h1>
+                <Clock variant="desktop" />
               </div>
-              <Clock variant="desktop" />
-            </div>
 
-            <div className="flex flex-wrap gap-4 text-sm text-slate-400">
-              <div className="flex items-center space-x-2 bg-slate-900/50 px-3 py-1.5 rounded-full border border-slate-800">
-                <MapPin size={14} />
-                <span>{plan.location}</span>
+              <div className="flex flex-wrap gap-4 text-sm text-slate-400">
+                <div className="flex items-center space-x-2 bg-slate-900/50 px-3 py-1.5 rounded-full border border-slate-800">
+                  <MapPin size={14} />
+                  <span>{plan.location}</span>
+                </div>
+                <div className="flex items-center space-x-2 bg-slate-900/50 px-3 py-1.5 rounded-full border border-slate-800">
+                  <ClipboardList size={14} />
+                  <span>{plan.exercises.length} Exercises</span>
+                </div>
               </div>
-              <div className="flex items-center space-x-2 bg-slate-900/50 px-3 py-1.5 rounded-full border border-slate-800">
-                <ClipboardList size={14} />
-                <span>{plan.exercises.length} Exercises</span>
-              </div>
-            </div>
-          </header>
+            </header>
+          )}
 
           {/* Day 1 Randomizer Bar */}
           <div className="flex flex-col sm:flex-row gap-3">
@@ -214,8 +232,8 @@ export default function App() {
 
           {/* Exercise List */}
           <div className="space-y-6 sm:space-y-8">
-            {categories.map(category => {
-              const categoryExercises = plan.exercises.filter(ex => ex.category === category);
+            {CATEGORIES.map(category => {
+              const categoryExercises = exercisesByCategory[category];
               if (categoryExercises.length === 0) return null;
 
               return (
@@ -250,125 +268,129 @@ export default function App() {
         <div className="lg:col-span-5 space-y-8">
           <div className="lg:sticky lg:top-8 space-y-8">
             {/* Timer - Hidden on mobile, shown in bottom bar instead? Or just keep it here but make it prominent */}
-            <div className="hidden lg:block">
+            {isDesktop && (
               <WorkoutTimer />
-            </div>
+            )}
 
             {/* Active Exercise Detail - Desktop Version */}
-            <div className="hidden lg:block">
-              <AnimatePresence mode="wait">
-                {activeExercise ? (
-                  <motion.div
-                    key={activeExercise.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    className="glass-panel p-6 space-y-6 border-emerald-500/20"
-                  >
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded">
-                          Active Exercise
-                        </span>
-                        <Dumbbell size={18} className="text-slate-700" />
-                      </div>
-                      <h2 className="text-2xl font-display font-bold text-slate-100">{activeExercise.name}</h2>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800">
-                        <div className="text-[10px] font-mono text-slate-500 uppercase mb-1">Target</div>
-                        <div className="text-xl font-bold text-slate-200">{activeExercise.reps || '—'}</div>
-                      </div>
-                      <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800">
-                        <div className="text-[10px] font-mono text-slate-500 uppercase mb-1">Category</div>
-                        <div className="text-xl font-bold text-slate-200">{activeExercise.category}</div>
-                      </div>
-                    </div>
-
-                    {activeExercise.description && (
+            {isDesktop && (
+              <div>
+                <AnimatePresence mode="wait">
+                  {activeExercise ? (
+                    <motion.div
+                      key={activeExercise.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      className="glass-panel p-6 space-y-6 border-emerald-500/20"
+                    >
                       <div className="space-y-2">
-                        <div className="text-[10px] font-mono text-slate-500 uppercase">Instructions</div>
-                        <p className="text-slate-400 text-sm leading-relaxed">
-                          {activeExercise.description}
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded">
+                            Active Exercise
+                          </span>
+                          <Dumbbell size={18} className="text-slate-700" />
+                        </div>
+                        <h2 className="text-2xl font-display font-bold text-slate-100">{activeExercise.name}</h2>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800">
+                          <div className="text-[10px] font-mono text-slate-500 uppercase mb-1">Target</div>
+                          <div className="text-xl font-bold text-slate-200">{activeExercise.reps || '—'}</div>
+                        </div>
+                        <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800">
+                          <div className="text-[10px] font-mono text-slate-500 uppercase mb-1">Category</div>
+                          <div className="text-xl font-bold text-slate-200">{activeExercise.category}</div>
+                        </div>
+                      </div>
+
+                      {activeExercise.description && (
+                        <div className="space-y-2">
+                          <div className="text-[10px] font-mono text-slate-500 uppercase">Instructions</div>
+                          <p className="text-slate-400 text-sm leading-relaxed">
+                            {activeExercise.description}
+                          </p>
+                        </div>
+                      )}
+
+                      <button
+                        onClick={() => toggleExercise(activeExercise.id)}
+                        className={`w-full py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${activeExercise.completed
+                          ? 'bg-slate-800 text-slate-400'
+                          : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/20'
+                        }`}
+                      >
+                        {activeExercise.completed ? 'Mark Incomplete' : 'Mark Completed'}
+                        <ChevronRight size={18} />
+                      </button>
+                    </motion.div>
+                  ) : (
+                    <div className="glass-panel p-12 flex flex-col items-center justify-center text-center space-y-4 border-dashed border-slate-800">
+                      <div className="bg-slate-800/50 p-4 rounded-full">
+                        <ClipboardList size={32} className="text-slate-600" />
+                      </div>
+                      <div className="space-y-1">
+                        <h3 className="font-medium text-slate-400">No Exercise Selected</h3>
+                        <p className="text-sm text-slate-600 max-w-[200px]">
+                          Select an exercise from the list to see details and instructions.
                         </p>
                       </div>
-                    )}
-
-                    <button
-                      onClick={() => toggleExercise(activeExercise.id)}
-                      className={`w-full py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${activeExercise.completed
-                        ? 'bg-slate-800 text-slate-400'
-                        : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/20'
-                        }`}
-                    >
-                      {activeExercise.completed ? 'Mark Incomplete' : 'Mark Completed'}
-                      <ChevronRight size={18} />
-                    </button>
-                  </motion.div>
-                ) : (
-                  <div className="glass-panel p-12 flex flex-col items-center justify-center text-center space-y-4 border-dashed border-slate-800">
-                    <div className="bg-slate-800/50 p-4 rounded-full">
-                      <ClipboardList size={32} className="text-slate-600" />
                     </div>
-                    <div className="space-y-1">
-                      <h3 className="font-medium text-slate-400">No Exercise Selected</h3>
-                      <p className="text-sm text-slate-600 max-w-[200px]">
-                        Select an exercise from the list to see details and instructions.
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </AnimatePresence>
-            </div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
 
             {/* Quick Actions - Desktop */}
-            <div className="hidden lg:grid grid-cols-2 gap-4">
-              <button
-                onClick={() => setPlan(prev => ({ ...prev, exercises: prev.exercises.map(e => ({ ...e, completed: false })) }))}
-                className="flex items-center justify-center gap-2 p-3 rounded-xl border border-slate-800 text-slate-400 hover:bg-slate-800/50 transition-all text-sm"
-              >
-                <RotateCcw size={16} />
-                Reset Progress
-              </button>
-              <button
-                onClick={() => {
-                  let name = prompt("Exercise Name?");
-                  if (name) {
-                    name = name.replace(/<[^>]*>?/gm, '').trim().substring(0, 100);
-                    if (!name) return;
+            {isDesktop && (
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  onClick={() => setPlan(prev => ({ ...prev, exercises: prev.exercises.map(e => ({ ...e, completed: false })) }))}
+                  className="flex items-center justify-center gap-2 p-3 rounded-xl border border-slate-800 text-slate-400 hover:bg-slate-800/50 transition-all text-sm"
+                >
+                  <RotateCcw size={16} />
+                  Reset Progress
+                </button>
+                <button
+                  onClick={() => {
+                    let name = prompt("Exercise Name?");
+                    if (name) {
+                      name = name.replace(/<[^>]*>?/gm, '').trim().substring(0, 100);
+                      if (!name) return;
 
-                    let reps = prompt("Reps/Duration?");
-                    if (reps) {
+                      let reps = prompt("Reps/Duration?");
+                      if (reps) {
                         reps = reps.replace(/<[^>]*>?/gm, '').trim().substring(0, 50);
-                    }
+                      }
 
-                    setPlan(prev => ({
-                      ...prev,
-                      exercises: [...prev.exercises, {
-                        id: crypto.randomUUID(),
-                        name,
-                        reps: reps || '',
-                        category: 'The Thang',
-                        completed: false
-                      }]
-                    }));
-                  }
-                }}
-                className="flex items-center justify-center gap-2 p-3 rounded-xl border border-slate-800 text-slate-400 hover:bg-slate-800/50 transition-all text-sm"
-              >
-                <Plus size={16} />
-                Add Exercise
-              </button>
-            </div>
+                      setPlan(prev => ({
+                        ...prev,
+                        exercises: [...prev.exercises, {
+                          id: crypto.randomUUID(),
+                          name,
+                          reps: reps || '',
+                          category: 'The Thang',
+                          completed: false
+                        }]
+                      }));
+                    }
+                  }}
+                  className="flex items-center justify-center gap-2 p-3 rounded-xl border border-slate-800 text-slate-400 hover:bg-slate-800/50 transition-all text-sm"
+                >
+                  <Plus size={16} />
+                  Add Exercise
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
       {/* Mobile Bottom Sheet for Active Exercise */}
       <AnimatePresence>
-        {activeExercise && (
-          <div className="lg:hidden fixed inset-0 z-40 flex items-end justify-center">
+        {!isDesktop && activeExercise && (
+          <div className="fixed inset-0 z-40 flex items-end justify-center">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -437,11 +459,13 @@ export default function App() {
       </AnimatePresence>
 
       {/* Mobile Sticky Bottom Timer Bar */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 p-4 pointer-events-none">
-        <div className="max-w-md mx-auto pointer-events-auto">
-          <WorkoutTimer />
+      {!isDesktop && (
+        <div className="fixed bottom-0 left-0 right-0 z-30 p-4 pointer-events-none">
+          <div className="max-w-md mx-auto pointer-events-auto">
+            <WorkoutTimer />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Natural Language Import Modal */}
       <AnimatePresence>

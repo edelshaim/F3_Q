@@ -4,7 +4,7 @@ interface ClockProps {
   variant: 'mobile' | 'desktop';
 }
 
-export const Clock: React.FC<ClockProps> = ({ variant }) => {
+export const Clock: React.FC<ClockProps> = React.memo(({ variant }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -32,4 +32,4 @@ export const Clock: React.FC<ClockProps> = ({ variant }) => {
       </div>
     </div>
   );
-};
+});
