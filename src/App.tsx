@@ -141,12 +141,9 @@ export default function App() {
     }
   };
 
-  const handleGenerate = async () => {
-    // Disabled for Day 1
-  };
-
   const handleImport = async () => {
-    // Disabled for Day 1
+    alert('Import feature is not implemented yet.');
+    setShowImportModal(false);
   };
 
   const activeExercise = plan.exercises.find(ex => ex.id === activeExerciseId);
