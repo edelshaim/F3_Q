@@ -6,7 +6,7 @@ interface TimerProps {
   onTick?: (seconds: number) => void;
 }
 
-export const WorkoutTimer: React.FC<TimerProps> = ({ onTick }) => {
+export const WorkoutTimer: React.FC<TimerProps> = React.memo(({ onTick }) => {
   const { seconds, status } = useSyncExternalStore(
     timerStore.subscribe,
     timerStore.getSnapshot
@@ -61,4 +61,4 @@ export const WorkoutTimer: React.FC<TimerProps> = ({ onTick }) => {
       </div>
     </div>
   );
-};
+});

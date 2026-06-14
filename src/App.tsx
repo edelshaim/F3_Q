@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   ClipboardList,
@@ -58,6 +58,8 @@ const INITIAL_PLAN: WorkoutPlan = {
     { id: 'c5', name: 'Overhead Tricep Stretch', reps: '20-30s / side', category: 'Cool-down', completed: false, description: 'Arm overhead, bend elbow, pull with opposite hand.' },
   ]
 };
+
+const CATEGORIES: Exercise['category'][] = ['Warm-up', 'The Thang', 'Mary', 'Cool-down'];
 
 export default function App() {
   const [plan, setPlan] = useState<WorkoutPlan>(() => {
@@ -146,9 +148,25 @@ export default function App() {
     setShowImportModal(false);
   };
 
-  const activeExercise = plan.exercises.find(ex => ex.id === activeExerciseId);
+  const activeExercise = useMemo(
+    () => plan.exercises.find(ex => ex.id === activeExerciseId),
+    [plan.exercises, activeExerciseId]
+  );
 
-  const categories: Exercise['category'][] = ['Warm-up', 'The Thang', 'Mary', 'Cool-down'];
+  const exercisesByCategory = useMemo<Record<Exercise['category'], Exercise[]>>(() => {
+    const grouped: Record<Exercise['category'], Exercise[]> = {
+      'Warm-up': [],
+      'The Thang': [],
+      Mary: [],
+      'Cool-down': []
+    };
+    plan.exercises.forEach(ex => {
+      if (Object.prototype.hasOwnProperty.call(grouped, ex.category)) {
+        grouped[ex.category].push(ex);
+      }
+    });
+    return grouped;
+  }, [plan.exercises]);
 
   return (
     <div className="min-h-screen bg-[#0f1115] text-slate-100 pb-24 lg:pb-8">
@@ -210,8 +228,8 @@ export default function App() {
 
           {/* Exercise List */}
           <div className="space-y-6 sm:space-y-8">
-            {categories.map(category => {
-              const categoryExercises = plan.exercises.filter(ex => ex.category === category);
+            {CATEGORIES.map(category => {
+              const categoryExercises = exercisesByCategory[category];
               if (categoryExercises.length === 0) return null;
 
               return (
