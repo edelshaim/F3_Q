@@ -1,16 +1,24 @@
 export function parseCsvLine(line) {
     const parts = [];
-    let currentWord = '';
+    let start = 0;
     let inQuotes = false;
-    for (let char of line) {
-        if (char === '"') inQuotes = !inQuotes;
-        else if (char === ',' && !inQuotes) {
+    let currentWord = '';
+
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        if (char === '"') {
+            currentWord += line.substring(start, i);
+            inQuotes = !inQuotes;
+            start = i + 1;
+        } else if (char === ',' && !inQuotes) {
+            currentWord += line.substring(start, i);
             parts.push(currentWord);
             currentWord = '';
-        } else {
-            currentWord += char;
+            start = i + 1;
         }
     }
+
+    currentWord += line.substring(start);
     parts.push(currentWord);
     return parts;
 }
