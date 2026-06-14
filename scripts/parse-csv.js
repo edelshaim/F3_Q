@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { parseCsvLine } from './csv-parser.js';
 
 const csvPath = path.resolve('./f3-codex-export.csv');
 const outPath = path.resolve('./src/data/exercises.json');
@@ -13,20 +14,7 @@ for (let i = 1; i < lines.length; i++) {
     const line = lines[i].trim();
     if (!line) continue;
 
-    // Custom split ignoring commas inside quotes
-    const parts = [];
-    let currentWord = '';
-    let inQuotes = false;
-    for (let char of line) {
-        if (char === '"') inQuotes = !inQuotes;
-        else if (char === ',' && !inQuotes) {
-            parts.push(currentWord);
-            currentWord = '';
-        } else {
-            currentWord += char;
-        }
-    }
-    parts.push(currentWord);
+    const parts = parseCsvLine(line);
 
     if (parts.length >= 3) {
         const rawName = parts[1].trim();
