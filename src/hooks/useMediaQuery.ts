@@ -1,5 +1,16 @@
 import { useState, useEffect } from 'react';
 
+export const tailwindMediaQueries = {
+  // Tailwind v4 emits `lg` as @media (min-width: 64rem) in this app.
+  lg: '(min-width: 64rem)',
+} as const;
+
+export function useTailwindBreakpoint(
+  breakpoint: keyof typeof tailwindMediaQueries
+): boolean {
+  return useMediaQuery(tailwindMediaQueries[breakpoint]);
+}
+
 export function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
@@ -13,10 +24,7 @@ export function useMediaQuery(query: string): boolean {
 
     const mediaQuery = window.matchMedia(query);
 
-    // Update if the value has changed since initialization
-    if (mediaQuery.matches !== matches) {
-      setMatches(mediaQuery.matches);
-    }
+    setMatches(mediaQuery.matches);
 
     const handler = (event: MediaQueryListEvent) => {
       setMatches(event.matches);
@@ -31,7 +39,7 @@ export function useMediaQuery(query: string): boolean {
       mediaQuery.addListener(handler);
       return () => mediaQuery.removeListener(handler);
     }
-  }, [query, matches]);
+  }, [query]);
 
   return matches;
 }

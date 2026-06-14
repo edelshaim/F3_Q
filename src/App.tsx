@@ -20,7 +20,7 @@ import { Exercise, WorkoutPlan } from './types';
 import { WorkoutTimer } from './components/WorkoutTimer';
 import { Clock } from './components/Clock';
 import { ExerciseItem } from './components/ExerciseItem';
-import { useMediaQuery } from './hooks/useMediaQuery';
+import { useTailwindBreakpoint } from './hooks/useMediaQuery';
 
 const INITIAL_PLAN: WorkoutPlan = {
   title: "THE SNOW SHOVEL GAUNTLET",
@@ -81,7 +81,7 @@ export default function App() {
   const [importText, setImportText] = useState('');
   const [themeInput, setThemeInput] = useState('');
 
-  const isDesktop = useMediaQuery('(min-width: 1024px)');
+  const isDesktop = useTailwindBreakpoint('lg');
 
   useEffect(() => {
     localStorage.setItem('f3-q-sheet-plan', JSON.stringify(plan));
@@ -157,7 +157,7 @@ export default function App() {
     <div className="min-h-screen bg-[#0f1115] text-slate-100 pb-24 lg:pb-8">
       {/* Mobile Top Bar */}
       {!isDesktop && (
-        <div className="lg:hidden sticky top-0 z-30 bg-[#0f1115]/80 backdrop-blur-lg border-b border-slate-800 px-4 py-3 flex items-center justify-between">
+        <div className="sticky top-0 z-30 bg-[#0f1115]/80 backdrop-blur-lg border-b border-slate-800 px-4 py-3 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Zap className="text-emerald-500" size={20} />
             <h1 className="text-lg font-display font-bold tracking-tight">F3 Q-Sheet</h1>
@@ -171,7 +171,7 @@ export default function App() {
         {/* Left Column: Header & Exercises */}
         <div className="lg:col-span-7 space-y-6 sm:space-y-8">
           {isDesktop && (
-            <header className="hidden lg:block space-y-4">
+            <header className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="bg-emerald-500 p-2 rounded-lg shadow-lg shadow-emerald-500/20">
@@ -250,121 +250,119 @@ export default function App() {
           <div className="lg:sticky lg:top-8 space-y-8">
             {/* Timer - Hidden on mobile, shown in bottom bar instead? Or just keep it here but make it prominent */}
             {isDesktop && (
-              <div className="hidden lg:block">
-                <WorkoutTimer />
-              </div>
+              <WorkoutTimer />
             )}
 
             {/* Active Exercise Detail - Desktop Version */}
             {isDesktop && (
-            <div className="hidden lg:block">
-              <AnimatePresence mode="wait">
-                {activeExercise ? (
-                  <motion.div
-                    key={activeExercise.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    className="glass-panel p-6 space-y-6 border-emerald-500/20"
-                  >
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded">
-                          Active Exercise
-                        </span>
-                        <Dumbbell size={18} className="text-slate-700" />
-                      </div>
-                      <h2 className="text-2xl font-display font-bold text-slate-100">{activeExercise.name}</h2>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800">
-                        <div className="text-[10px] font-mono text-slate-500 uppercase mb-1">Target</div>
-                        <div className="text-xl font-bold text-slate-200">{activeExercise.reps || '—'}</div>
-                      </div>
-                      <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800">
-                        <div className="text-[10px] font-mono text-slate-500 uppercase mb-1">Category</div>
-                        <div className="text-xl font-bold text-slate-200">{activeExercise.category}</div>
-                      </div>
-                    </div>
-
-                    {activeExercise.description && (
+              <div>
+                <AnimatePresence mode="wait">
+                  {activeExercise ? (
+                    <motion.div
+                      key={activeExercise.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      className="glass-panel p-6 space-y-6 border-emerald-500/20"
+                    >
                       <div className="space-y-2">
-                        <div className="text-[10px] font-mono text-slate-500 uppercase">Instructions</div>
-                        <p className="text-slate-400 text-sm leading-relaxed">
-                          {activeExercise.description}
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded">
+                            Active Exercise
+                          </span>
+                          <Dumbbell size={18} className="text-slate-700" />
+                        </div>
+                        <h2 className="text-2xl font-display font-bold text-slate-100">{activeExercise.name}</h2>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800">
+                          <div className="text-[10px] font-mono text-slate-500 uppercase mb-1">Target</div>
+                          <div className="text-xl font-bold text-slate-200">{activeExercise.reps || '—'}</div>
+                        </div>
+                        <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800">
+                          <div className="text-[10px] font-mono text-slate-500 uppercase mb-1">Category</div>
+                          <div className="text-xl font-bold text-slate-200">{activeExercise.category}</div>
+                        </div>
+                      </div>
+
+                      {activeExercise.description && (
+                        <div className="space-y-2">
+                          <div className="text-[10px] font-mono text-slate-500 uppercase">Instructions</div>
+                          <p className="text-slate-400 text-sm leading-relaxed">
+                            {activeExercise.description}
+                          </p>
+                        </div>
+                      )}
+
+                      <button
+                        onClick={() => toggleExercise(activeExercise.id)}
+                        className={`w-full py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${activeExercise.completed
+                          ? 'bg-slate-800 text-slate-400'
+                          : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/20'
+                        }`}
+                      >
+                        {activeExercise.completed ? 'Mark Incomplete' : 'Mark Completed'}
+                        <ChevronRight size={18} />
+                      </button>
+                    </motion.div>
+                  ) : (
+                    <div className="glass-panel p-12 flex flex-col items-center justify-center text-center space-y-4 border-dashed border-slate-800">
+                      <div className="bg-slate-800/50 p-4 rounded-full">
+                        <ClipboardList size={32} className="text-slate-600" />
+                      </div>
+                      <div className="space-y-1">
+                        <h3 className="font-medium text-slate-400">No Exercise Selected</h3>
+                        <p className="text-sm text-slate-600 max-w-[200px]">
+                          Select an exercise from the list to see details and instructions.
                         </p>
                       </div>
-                    )}
-
-                    <button
-                      onClick={() => toggleExercise(activeExercise.id)}
-                      className={`w-full py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${activeExercise.completed
-                        ? 'bg-slate-800 text-slate-400'
-                        : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/20'
-                        }`}
-                    >
-                      {activeExercise.completed ? 'Mark Incomplete' : 'Mark Completed'}
-                      <ChevronRight size={18} />
-                    </button>
-                  </motion.div>
-                ) : (
-                  <div className="glass-panel p-12 flex flex-col items-center justify-center text-center space-y-4 border-dashed border-slate-800">
-                    <div className="bg-slate-800/50 p-4 rounded-full">
-                      <ClipboardList size={32} className="text-slate-600" />
                     </div>
-                    <div className="space-y-1">
-                      <h3 className="font-medium text-slate-400">No Exercise Selected</h3>
-                      <p className="text-sm text-slate-600 max-w-[200px]">
-                        Select an exercise from the list to see details and instructions.
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </AnimatePresence>
-            </div>
+                  )}
+                </AnimatePresence>
+              </div>
             )}
 
             {/* Quick Actions - Desktop */}
             {isDesktop && (
-            <div className="hidden lg:grid grid-cols-2 gap-4">
-              <button
-                onClick={() => setPlan(prev => ({ ...prev, exercises: prev.exercises.map(e => ({ ...e, completed: false })) }))}
-                className="flex items-center justify-center gap-2 p-3 rounded-xl border border-slate-800 text-slate-400 hover:bg-slate-800/50 transition-all text-sm"
-              >
-                <RotateCcw size={16} />
-                Reset Progress
-              </button>
-              <button
-                onClick={() => {
-                  let name = prompt("Exercise Name?");
-                  if (name) {
-                    name = name.replace(/<[^>]*>?/gm, '').trim().substring(0, 100);
-                    if (!name) return;
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  onClick={() => setPlan(prev => ({ ...prev, exercises: prev.exercises.map(e => ({ ...e, completed: false })) }))}
+                  className="flex items-center justify-center gap-2 p-3 rounded-xl border border-slate-800 text-slate-400 hover:bg-slate-800/50 transition-all text-sm"
+                >
+                  <RotateCcw size={16} />
+                  Reset Progress
+                </button>
+                <button
+                  onClick={() => {
+                    let name = prompt("Exercise Name?");
+                    if (name) {
+                      name = name.replace(/<[^>]*>?/gm, '').trim().substring(0, 100);
+                      if (!name) return;
 
-                    let reps = prompt("Reps/Duration?");
-                    if (reps) {
+                      let reps = prompt("Reps/Duration?");
+                      if (reps) {
                         reps = reps.replace(/<[^>]*>?/gm, '').trim().substring(0, 50);
-                    }
+                      }
 
-                    setPlan(prev => ({
-                      ...prev,
-                      exercises: [...prev.exercises, {
-                        id: crypto.randomUUID(),
-                        name,
-                        reps: reps || '',
-                        category: 'The Thang',
-                        completed: false
-                      }]
-                    }));
-                  }
-                }}
-                className="flex items-center justify-center gap-2 p-3 rounded-xl border border-slate-800 text-slate-400 hover:bg-slate-800/50 transition-all text-sm"
-              >
-                <Plus size={16} />
-                Add Exercise
-              </button>
-            </div>
+                      setPlan(prev => ({
+                        ...prev,
+                        exercises: [...prev.exercises, {
+                          id: crypto.randomUUID(),
+                          name,
+                          reps: reps || '',
+                          category: 'The Thang',
+                          completed: false
+                        }]
+                      }));
+                    }
+                  }}
+                  className="flex items-center justify-center gap-2 p-3 rounded-xl border border-slate-800 text-slate-400 hover:bg-slate-800/50 transition-all text-sm"
+                >
+                  <Plus size={16} />
+                  Add Exercise
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -373,7 +371,7 @@ export default function App() {
       {/* Mobile Bottom Sheet for Active Exercise */}
       <AnimatePresence>
         {!isDesktop && activeExercise && (
-          <div className="lg:hidden fixed inset-0 z-40 flex items-end justify-center">
+          <div className="fixed inset-0 z-40 flex items-end justify-center">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -443,7 +441,7 @@ export default function App() {
 
       {/* Mobile Sticky Bottom Timer Bar */}
       {!isDesktop && (
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 p-4 pointer-events-none">
+        <div className="fixed bottom-0 left-0 right-0 z-30 p-4 pointer-events-none">
           <div className="max-w-md mx-auto pointer-events-auto">
             <WorkoutTimer />
           </div>
