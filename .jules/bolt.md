@@ -1,3 +1,3 @@
-## 2026-05-26 - [Avoid Repeated O(N) Array Traversals During Render]
-**Learning:** [In App.tsx, a state update like typing triggers a full re-render. Filtering a large static or mostly-static array (e.g. plan.exercises.filter) inside a map loop during the return statement causes compounding O(N) operations, which slows down rapid interactions like keystrokes.]
-**Action:** [Pre-compute category groupings in a `useMemo` hook to shift filtering away from the render path, replacing O(N*C) operations on every re-render with an O(N) operation only when the list changes.]
+## 2024-05-21 - Optimization of large static assets
+**Learning:** Loading large, static JSON files (like 300KB) statically at the top of a React file forces the bundler to include it in the main chunk, significantly slowing down initial load time.
+**Action:** Use dynamic imports (e.g., `await import('./data.json')`) inside event handlers when the data is not immediately needed on initial render. This allows Vite to automatically code-split the JSON into a separate chunk.
