@@ -8,7 +8,19 @@ export const Clock: React.FC<ClockProps> = React.memo(({ variant }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    // Optimization: Clock only displays minutes.
+    // By checking if the minute has actually changed and returning the previous
+    // Date reference if it hasn't, React bails out of re-rendering, preventing
+    // 59 unnecessary renders per minute.
+    const timer = setInterval(() => {
+      setCurrentTime((prevTime) => {
+        const newTime = new Date();
+        if (prevTime.getMinutes() === newTime.getMinutes()) {
+          return prevTime;
+        }
+        return newTime;
+      });
+    }, 1000);
     return () => clearInterval(timer);
   }, []);
 
