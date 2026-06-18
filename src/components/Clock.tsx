@@ -8,8 +8,23 @@ export const Clock: React.FC<ClockProps> = React.memo(({ variant }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
+    let timeoutId: NodeJS.Timeout;
+
+    const scheduleNextUpdate = () => {
+      // ⚡ Bolt: Calculate exact ms until the next minute to avoid interval drift
+      // and reduce re-renders from 60/min to 1/min since UI only shows minutes.
+      const now = new Date();
+      const msUntilNextMinute = 60000 - (now.getTime() % 60000);
+
+      timeoutId = setTimeout(() => {
+        setCurrentTime(new Date());
+        scheduleNextUpdate();
+      }, msUntilNextMinute);
+    };
+
+    scheduleNextUpdate();
+
+    return () => clearTimeout(timeoutId);
   }, []);
 
   if (variant === 'mobile') {
