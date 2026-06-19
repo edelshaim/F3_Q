@@ -8,8 +8,27 @@ export const Clock: React.FC<ClockProps> = React.memo(({ variant }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
+    let timeoutId: NodeJS.Timeout;
+
+    const tick = () => {
+      const now = new Date();
+      setCurrentTime(now);
+
+      // Calculate time until the next exact minute
+      const msUntilNextMinute = 60000 - (now.getTime() % 60000);
+
+      // Use recursive setTimeout to schedule the next tick exactly on the minute boundary.
+      // This reduces re-renders from 60/min to 1/min since we only display down to minutes.
+      timeoutId = setTimeout(tick, msUntilNextMinute);
+    };
+
+    // Calculate time until the next minute for the first tick,
+    // but we don't need to re-render immediately if we already initialized state with new Date()
+    const now = new Date();
+    const msUntilNextMinute = 60000 - (now.getTime() % 60000);
+    timeoutId = setTimeout(tick, msUntilNextMinute);
+
+    return () => clearTimeout(timeoutId);
   }, []);
 
   if (variant === 'mobile') {
