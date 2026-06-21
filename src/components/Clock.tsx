@@ -8,8 +8,26 @@ export const Clock: React.FC<ClockProps> = React.memo(({ variant }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    const scheduleNextTick = () => {
+      const now = new Date();
+
+      // Calculate exact milliseconds until the next minute starts
+      const msUntilNextMinute = 60000 - (now.getSeconds() * 1000 + now.getMilliseconds());
+
+      // Schedule the next update exactly at the start of the next minute
+      // Add a small buffer (50ms) to ensure we've definitely crossed the minute boundary
+      timeoutId = setTimeout(() => {
+        setCurrentTime(new Date());
+        scheduleNextTick();
+      }, msUntilNextMinute + 50);
+    };
+
+    // Schedule the first tick
+    scheduleNextTick();
+
+    return () => clearTimeout(timeoutId);
   }, []);
 
   if (variant === 'mobile') {

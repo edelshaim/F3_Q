@@ -1,3 +1,6 @@
 ## 2024-05-21 - Optimization of large static assets
 **Learning:** Loading large, static JSON files (like 300KB) statically at the top of a React file forces the bundler to include it in the main chunk, significantly slowing down initial load time.
 **Action:** Use dynamic imports (e.g., `await import('./data.json')`) inside event handlers when the data is not immediately needed on initial render. This allows Vite to automatically code-split the JSON into a separate chunk.
+## 2024-06-21 - Clock Component Re-renders
+**Learning:** Component using `setInterval(..., 1000)` rendered 60 times a minute but only displayed HH:mm. Replaced with `setTimeout` sync'd to exact minute boundaries.
+**Action:** Always check `setInterval` calls in components that display UI updates. If UI only needs infrequent updates (like HH:mm), calculate the remaining time until the next boundary and use `setTimeout`.
