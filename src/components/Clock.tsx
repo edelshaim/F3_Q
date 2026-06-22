@@ -8,8 +8,25 @@ export const Clock: React.FC<ClockProps> = React.memo(({ variant }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
+    let timeoutId: NodeJS.Timeout;
+
+    // Recursive timeout to align updates exactly with the next minute boundary.
+    // This reduces re-renders from 60/min to 1/min (since we only show minutes)
+    // and prevents interval drift from background tab throttling.
+    const scheduleNextUpdate = () => {
+      const now = new Date();
+      // Calculate milliseconds until the start of the next minute
+      const msUntilNextMinute = 60000 - (now.getSeconds() * 1000 + now.getMilliseconds());
+
+      timeoutId = setTimeout(() => {
+        setCurrentTime(new Date());
+        scheduleNextUpdate();
+      }, msUntilNextMinute);
+    };
+
+    scheduleNextUpdate();
+
+    return () => clearTimeout(timeoutId);
   }, []);
 
   if (variant === 'mobile') {
