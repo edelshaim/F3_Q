@@ -8,8 +8,27 @@ export const Clock: React.FC<ClockProps> = React.memo(({ variant }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
+    // ⚡ Bolt: Performance optimization
+    // The clock only displays hours and minutes. Instead of updating every second
+    // (60 renders per minute), we calculate the exact ms until the next minute starts
+    // and update precisely when needed (1 render per minute).
+    // This reduces re-renders by 98% and avoids interval drift from background tab throttling.
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    const scheduleNextUpdate = () => {
+      const now = new Date();
+      // Calculate ms until the start of the next minute
+      const msUntilNextMinute = (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
+
+      timeoutId = setTimeout(() => {
+        setCurrentTime(new Date());
+        scheduleNextUpdate(); // Recursively schedule the next update
+      }, msUntilNextMinute);
+    };
+
+    scheduleNextUpdate();
+
+    return () => clearTimeout(timeoutId);
   }, []);
 
   if (variant === 'mobile') {
