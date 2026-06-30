@@ -5,11 +5,26 @@ interface ClockProps {
 }
 
 export const Clock: React.FC<ClockProps> = React.memo(({ variant }) => {
-  const [currentTime, setCurrentTime] = useState(new Date());
+  // Lazy initialize to avoid instantiating new Date on every render
+  const [currentTime, setCurrentTime] = useState(() => new Date());
 
   useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    const scheduleNextUpdate = () => {
+      const now = new Date();
+      // Only re-render when the minute changes, saving 59 renders per minute
+      const msUntilNextMinute = (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
+
+      timeoutId = setTimeout(() => {
+        setCurrentTime(new Date());
+        scheduleNextUpdate();
+      }, msUntilNextMinute);
+    };
+
+    scheduleNextUpdate();
+
+    return () => clearTimeout(timeoutId);
   }, []);
 
   if (variant === 'mobile') {
